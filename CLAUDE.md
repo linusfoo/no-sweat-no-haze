@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-"No Sweat, No Haze" is a static web app. It ranks ways out of CT Hub (2 Kallang Ave) to home, or out to lunch, by time spent outdoors in live rain, haze and heat. It's live at https://linusfoo.github.io/no-sweat-no-haze/ and deployed by pushing `main` to GitHub, which publishes it with Pages (`.nojekyll` is present). The product reasoning (Five Whys interview) is in `Q.md`.
+"No Sweat, No Haze" is a static web app. It ranks ways out of Luzerne (70 Bendemeer Rd) to home, or out to lunch, by time spent outdoors in live rain, haze and heat. It's live at https://linusfoo.github.io/no-sweat-no-haze/ and deployed by pushing `main` to GitHub, which publishes it with Pages (`.nojekyll` is present). The product reasoning (Five Whys interview) is in `Q.md`.
 
 ## Commands
 

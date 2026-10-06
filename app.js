@@ -1,9 +1,9 @@
-import * as api from './lib/api.js?v=202610060642';
-import { conditionsAt } from './lib/conditions.js?v=202610060642';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060642';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060642';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060642';
-import { distM, walkMin } from './lib/geo.js?v=202610060642';
+import * as api from './lib/api.js?v=202610060757';
+import { conditionsAt } from './lib/conditions.js?v=202610060757';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060757';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060757';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060757';
+import { distM, walkMin } from './lib/geo.js?v=202610060757';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -361,7 +361,7 @@ function heatMessage(t, uv) {
   return null;
 }
 
-// One exclamation for the worst thing happening at CT Hub right now, to open the recommendation.
+// One exclamation for the worst thing happening at the office right now, to open the recommendation.
 function moodPrefix(c) {
   const mm = c.inputs.rainMm;
   if (mm > 0 && /thunder/i.test(c.inputs.forecastText)) return 'Alamak, thunderstorm.';
@@ -459,7 +459,7 @@ function howLine(pO, pD) {
   const b = perMin(pD);
   if (a < 0.1 && b < 0.1) return 'Ranking: weather is fine, so options are ordered by door-to-door time.';
   const fmt = (x) => (x < 0.1 ? 'nothing' : `${x.toFixed(1)} min`);
-  const where = pD === pO ? '' : Math.abs(a - b) < 0.05 ? ' at both ends' : ` at CT Hub and ${fmt(b)} near home`;
+  const where = pD === pO ? '' : Math.abs(a - b) < 0.05 ? ' at both ends' : ` at Luzerne and ${fmt(b)} near home`;
   return `Ranking: feels like = door-to-door time + a weather penalty. Right now each minute outside adds ${fmt(a)}${where}.`;
 }
 
@@ -728,9 +728,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json?v=202610060642'),
-      loadLocal('data/prices.json?v=202610060642'),
-      loadLocal('data/hawkers.json?v=202610060642'),
+      loadLocal('data/config.json?v=202610060757'),
+      loadLocal('data/prices.json?v=202610060757'),
+      loadLocal('data/hawkers.json?v=202610060757'),
     ]);
     state.cfg = cfg;
     state.prices = prices;

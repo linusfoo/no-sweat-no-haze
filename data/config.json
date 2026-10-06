@@ -1,12 +1,44 @@
 {
-  "office": { "name": "CT Hub", "address": "2 Kallang Ave", "lat": 1.31222, "lng": 103.86282 },
-  "home": { "name": "Home", "address": "Tanglin View, 150 Prince Charles Crescent", "lat": 1.29200, "lng": 103.81788 },
+  "office": {
+    "name": "Luzerne",
+    "address": "70 Bendemeer Rd",
+    "lat": 1.31615,
+    "lng": 103.86272
+  },
+  "home": {
+    "name": "Home",
+    "address": "Tanglin View, 150 Prince Charles Crescent",
+    "lat": 1.292,
+    "lng": 103.81788
+  },
   "mrtHome": [
     {
       "line": "EWL",
-      "from": { "name": "Lavender (EW11)", "lat": 1.30738, "lng": 103.86277 },
-      "to": { "name": "Redhill (EW18)", "lat": 1.28967, "lng": 103.81679 },
+      "from": {
+        "name": "Lavender (EW11)",
+        "lat": 1.30738,
+        "lng": 103.86277
+      },
+      "to": {
+        "name": "Redhill (EW18)",
+        "lat": 1.28967,
+        "lng": 103.81679
+      },
       "rideMin": 14
+    },
+    {
+      "line": "NEL + EWL",
+      "from": {
+        "name": "Boon Keng (NE9)",
+        "lat": 1.31939,
+        "lng": 103.86179
+      },
+      "to": {
+        "name": "Redhill (EW18), change at Outram Park",
+        "lat": 1.28967,
+        "lng": 103.81679
+      },
+      "rideMin": 19
     }
   ],
   "lunchRadiusM": 2000,

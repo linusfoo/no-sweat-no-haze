@@ -1,5 +1,5 @@
 {
-  "note": "Hand-curated typical price per person for chains near CT Hub (estimates, Oct 2026). Tier 1 = under $8, 2 = $8-15, 3 = $15-30. Anything not listed is 'price unknown'.",
+  "note": "Hand-curated typical price per person for chains near Luzerne (estimates, Oct 2026). Tier 1 = under $8, 2 = $8-15, 3 = $15-30. Anything not listed is 'price unknown'.",
   "tiers": { "1": "under $8", "2": "$8–15", "3": "$15–30" },
   "brands": {
     "Ya Kun Kaya Toast": 1,

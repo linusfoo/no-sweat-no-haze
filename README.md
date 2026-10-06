@@ -2,7 +2,7 @@
 
 **Stay dry, breathe easy.** Live at **https://linusfoo.github.io/no-sweat-no-haze/**
 
-A web app for office workers at CT Hub (2 Kallang Ave). It ranks ways to get home, or out to lunch, by how much time you'll spend **outdoors** in the current rain, haze and heat.
+A web app for office workers at Luzerne (70 Bendemeer Rd). It ranks ways to get home, or out to lunch, by how much time you'll spend **outdoors** in the current rain, haze and heat.
 
 Why it exists: see [Q.md](Q.md) (the product interview, using the Five Whys).
 
@@ -30,7 +30,7 @@ npm test
 
 ## What it shows
 
-- **Conditions:** the 2-hour forecast and live rain at CT Hub and at home, PSI/PM2.5, temperature and UV.
+- **Conditions:** the 2-hour forecast and live rain at Luzerne and at home, PSI/PM2.5, temperature and UV.
 - **Go home:** taxi, MRT and every direct bus, ranked by *feels like* minutes. For buses, it says when to leave so you wait indoors, not at the stop. When it's raining but the forecast is dry, it also offers "wait 30 min".
 - **Lunch:** hawker centres plus OpenStreetMap restaurants, cafes, fast food and food courts within 2 km, filtered by budget. For each place it picks walking or a short bus ride.
 
