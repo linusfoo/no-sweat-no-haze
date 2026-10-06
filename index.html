@@ -76,7 +76,51 @@
   label.toggle { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; }
   input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 
-  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 26px; }
+  .sensitive {
+    display: flex; align-items: center; gap: 14px; margin: -8px 0 24px; padding: 14px 18px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .sensitive:hover { border-color: var(--accent); }
+  .sensitive.on { background: var(--accent-soft); border-color: var(--accent); }
+  .sensitive input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch { flex: none; width: 44px; height: 26px; border-radius: 999px; background: var(--border); position: relative; transition: background .15s; }
+  .thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(15, 23, 42, .25); transition: transform .15s; }
+  .sensitive.on .switch { background: var(--accent); }
+  .sensitive.on .thumb { transform: translateX(18px); }
+  .sensitive input:focus-visible + .switch { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sens-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+  .sens-title { font-weight: 600; }
+  .pill.on { background: var(--accent); color: var(--on-accent); }
+  @media (prefers-reduced-motion: reduce) { .switch, .thumb, .sensitive { transition: none; } }
+
+  .alerts { display: grid; gap: 8px; margin-bottom: 16px; }
+  .alerts:empty { display: none; }
+  .alert {
+    padding: 12px 16px; border-radius: 12px; border: 1px solid transparent;
+    border-left-width: 5px; font-size: 14px; line-height: 1.45;
+  }
+  .alert-title { font-weight: 650; }
+  .alert.bad { background: var(--bad-soft); border-color: var(--bad); color: var(--text); }
+  .alert.bad .alert-title { color: var(--bad); }
+  .alert.meh { background: var(--meh-soft); border-color: var(--meh); color: var(--text); }
+  .alert.meh .alert-title { color: var(--meh); }
+  .alert.good { background: var(--good-soft); border-color: var(--good); color: var(--text); }
+  .alert.good .alert-title { color: var(--good); }
+
+  .tag { display: inline-block; margin-left: 4px; font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); vertical-align: 1px; white-space: nowrap; }
+  .reason { font-size: 13px; margin-top: 4px; padding-left: 10px; border-left: 2px solid var(--border); }
+  .reason.up { color: var(--good); border-left-color: var(--good); }
+  .reason.down { color: var(--muted); }
+  .feels { display: flex; flex-direction: column; gap: 4px; min-width: 96px; }
+  .bar { display: flex; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .bar .trip { background: var(--muted); opacity: .45; }
+  .bar .pen.good { background: var(--good); }
+  .bar .pen.meh { background: var(--meh); }
+  .bar .pen.bad { background: var(--bad); }
+  .verdict .how { font-size: 13px; color: var(--muted); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; margin-bottom: 26px; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); }
   .card .k { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); display: flex; align-items: center; gap: 8px; }
   .card .k::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex: none; }
@@ -142,13 +186,24 @@
       <p class="tagline">Getting out of CT Hub? Stay dry and breathe easy: ways out ranked by how long you'll spend outside.</p>
     </div>
     <div class="controls">
-      <label class="toggle" title="Doubles the weight of haze, heat and UV"><input type="checkbox" id="sensitive"> Haze/heat sensitive</label>
       <button id="refresh" type="button">Refresh</button>
       <span class="status" id="status" aria-live="polite"></span>
     </div>
   </header>
 
+  <section class="alerts" id="alerts" aria-label="Weather alerts"></section>
+
   <section class="cards" id="conditions" aria-label="Current conditions"></section>
+
+  <label class="sensitive" id="sensitive-row" for="sensitive">
+    <input type="checkbox" id="sensitive" role="switch" aria-describedby="sensitive-desc">
+    <span class="switch" aria-hidden="true"><span class="thumb"></span></span>
+    <span class="sens-text">
+      <span class="sens-title">Sensitive to haze or heat?</span>
+      <span class="sub" id="sensitive-desc">Turn this on if you have asthma or allergies, or struggle in the heat. Haze, heat and UV will count double.</span>
+    </span>
+    <span class="pill plain" id="sensitive-state">Off</span>
+  </label>
 
   <div class="tabs" role="tablist">
     <button role="tab" id="tab-home" data-tab="home" type="button">Go home</button>
