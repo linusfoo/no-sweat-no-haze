@@ -14,6 +14,14 @@ python -m http.server 8000
 
 Then open http://localhost:8000. It needs to be served over http, not opened as a file, because it loads JSON files. No build step, no API keys.
 
+## Release it
+
+Before pushing a change, stamp new version numbers on the script and data links so browsers don't mix cached old files with new ones:
+
+```bash
+npm run bump
+```
+
 ## Test it
 
 ```bash
@@ -46,6 +54,7 @@ npm test
 | `lib/bus.js` | Direct buses and short hops from busrouter.sg route data |
 | `lib/places.js` | Lunch places, price tiers, walk vs. bus |
 | `data/hawkers.json` | NEA hawker centres (bundled snapshot) |
+| `scripts/bump-version.js` | Stamps cache-busting `?v=` versions before a release |
 
 ## Data sources (all free, no key)
 

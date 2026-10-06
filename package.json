@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "python -m http.server 8000",
-    "test": "node --test \"tests/*.test.js\""
+    "test": "node --test \"tests/*.test.js\"",
+    "bump": "node scripts/bump-version.js"
   }
 }

@@ -1,9 +1,9 @@
-import * as api from './lib/api.js';
-import { conditionsAt } from './lib/conditions.js';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js';
-import { distM, walkMin } from './lib/geo.js';
+import * as api from './lib/api.js?v=202610060547';
+import { conditionsAt } from './lib/conditions.js?v=202610060547';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060547';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060547';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060547';
+import { distM, walkMin } from './lib/geo.js?v=202610060547';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -661,9 +661,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json'),
-      loadLocal('data/prices.json'),
-      loadLocal('data/hawkers.json'),
+      loadLocal('data/config.json?v=202610060547'),
+      loadLocal('data/prices.json?v=202610060547'),
+      loadLocal('data/hawkers.json?v=202610060547'),
     ]);
     state.cfg = cfg;
     state.prices = prices;
