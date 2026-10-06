@@ -1,9 +1,9 @@
-import * as api from './lib/api.js?v=202610060551';
-import { conditionsAt } from './lib/conditions.js?v=202610060551';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060551';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060551';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060551';
-import { distM, walkMin } from './lib/geo.js?v=202610060551';
+import * as api from './lib/api.js?v=202610060556';
+import { conditionsAt } from './lib/conditions.js?v=202610060556';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060556';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060556';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060556';
+import { distM, walkMin } from './lib/geo.js?v=202610060556';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -287,6 +287,25 @@ function conditionWords(p) {
 
 // ---------- alerts and explanations ----------
 
+// The worse the haze, the stronger the Singlish. Bands follow NEA's PSI and PM2.5 levels.
+function hazeMessage(psi, pm) {
+  const askSwitch = state.sensitive ? '' : ' Got asthma? On the switch below.';
+  const band = `PSI ${psi} (${psiBand(psi)}), PM2.5 ${pm} µg/m³`;
+  if (psi > 300 || pm > 250) {
+    return { level: 'bad', title: 'Alamak, hazardous haze!', text: `${band}. Stay indoors if can. Must go out? Wear N95 and take cab door to door.` };
+  }
+  if (psi > 200 || pm > 150) {
+    return { level: 'bad', title: 'Wah lau, haze damn jialat today', text: `${band}. Don't walk outside unless must. Cab or MRT, and minimise the walk.${askSwitch}` };
+  }
+  if (psi > 100) {
+    return { level: 'bad', title: 'Wah, jialat. Haze is back', text: `${band}. Walk less today, the air not so nice.${askSwitch}` };
+  }
+  if (pm > 55) {
+    return { level: 'meh', title: 'Bit hazy today', text: `${band}. Can still go out, but don't walk too long.${askSwitch}` };
+  }
+  return null;
+}
+
 function buildAlerts(cO, cD) {
   const { office } = state.cfg;
   const alerts = [];
@@ -308,12 +327,9 @@ function buildAlerts(cO, cD) {
   }
   const psi = cO.inputs.psi;
   const pm = cO.inputs.pm25;
-  if (psi > 100 || pm > 55) {
-    alerts.push({
-      level: psi > 200 || pm > 150 ? 'bad' : psi > 100 ? 'bad' : 'meh',
-      title: `Haze again: PSI ${psi} (${psiBand(psi)})`,
-      text: `PM2.5 is ${pm} µg/m³. Walk less today${state.sensitive ? '' : '. Got asthma? On the switch below'}.`,
-    });
+  const hazeAlert = hazeMessage(psi, pm);
+  if (hazeAlert) {
+    alerts.push(hazeAlert);
   } else if (psi > 50 && state.sensitive) {
     alerts.push({ level: 'meh', title: `Air so-so: PSI ${psi}`, text: 'Most people ok. Counted for you because your sensitive switch is on.' });
   }
@@ -432,6 +448,7 @@ function renderHome(pO, pD, cO) {
     if (fastest !== best) why += `, vs ${mins(fastest.outOrigin + fastest.outDest)} for the faster ${fastest.label}`;
     why += '.';
   }
+  if (cO.inputs.psi > 100) why = `Wah, the haze jialat. ${why}`;
   if (state.sensitive && pO.haze + pO.heat + pD.haze + pD.heat > 0) why += ' Ranked with sensitive mode on.';
   const leave = best.mode === 'wait' ? 'wait 30 min first' : best.leaveIn < 0.5 ? 'go now' : `leave in ${mins(best.leaveIn)}`;
   $('#home-verdict').innerHTML = `<div class="big">${esc(best.label)}: ${leave}, reach home by ${clock(inMin(best.totalMin))}</div><div class="why">${esc(why)}</div><div class="how">${esc(howLine(pO, pD))}</div>`;
@@ -514,6 +531,7 @@ function renderLunch(pO) {
     let why = words.length
       ? `It's ${words.join(' and ')} today. Only ${mins(top.best.outOrigin + top.best.outDest)} outside to reach.`
       : `Weather ok, only ${mins(top.best.totalMin)} away.`;
+    if (state.raw.psi && conditionsAt(state.raw, office.lat, office.lng).inputs.psi > 100) why = `Wah, the haze jialat. ${why}`;
     if (state.sensitive && pO.haze + pO.heat > 0) why += ' Ranked with sensitive mode on.';
     $('#lunch-verdict').innerHTML = `<div class="big">${esc(top.place.name)}: ${esc(top.best.label.toLowerCase())}</div><div class="why">${esc(why)} Showing places ${esc(budgetText)} per pax.</div><div class="how">${esc(howLine(pO, pO))}</div>`;
     const shown = rows.slice(0, 15);
@@ -662,9 +680,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json?v=202610060551'),
-      loadLocal('data/prices.json?v=202610060551'),
-      loadLocal('data/hawkers.json?v=202610060551'),
+      loadLocal('data/config.json?v=202610060556'),
+      loadLocal('data/prices.json?v=202610060556'),
+      loadLocal('data/hawkers.json?v=202610060556'),
     ]);
     state.cfg = cfg;
     state.prices = prices;
