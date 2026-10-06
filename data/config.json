@@ -1,18 +1,12 @@
 {
   "office": { "name": "CT Hub", "address": "2 Kallang Ave", "lat": 1.31222, "lng": 103.86282 },
-  "home": { "name": "Home", "address": "Blk 330 Tampines St 32", "lat": 1.35336, "lng": 103.95953 },
+  "home": { "name": "Home", "address": "Tanglin View, 150 Prince Charles Crescent", "lat": 1.29200, "lng": 103.81788 },
   "mrtHome": [
-    {
-      "line": "DTL",
-      "from": { "name": "Bendemeer (DT23)", "lat": 1.31367, "lng": 103.86298 },
-      "to": { "name": "Tampines East (DT33)", "lat": 1.35619, "lng": 103.95463 },
-      "rideMin": 22
-    },
     {
       "line": "EWL",
       "from": { "name": "Lavender (EW11)", "lat": 1.30738, "lng": 103.86277 },
-      "to": { "name": "Tampines (EW2)", "lat": 1.35359, "lng": 103.94522 },
-      "rideMin": 20
+      "to": { "name": "Redhill (EW18)", "lat": 1.28967, "lng": 103.81679 },
+      "rideMin": 14
     }
   ],
   "lunchRadiusM": 2000,

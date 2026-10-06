@@ -38,7 +38,7 @@ npm test
 
 ## Changing it
 
-- Office, home and MRT routes: `data/config.json`. Home is a sample address (Blk 330 Tampines St 32). MRT ride times are typical values; update `mrtHome` if you change home.
+- Office, home and MRT routes: `data/config.json`. Home is a sample address (Tanglin View, Prince Charles Crescent). MRT ride times are typical values; update `mrtHome` if you change home.
 - Price tiers for chains: `data/prices.json`. Unlisted places show as "price unknown".
 - Scoring weights: `lib/score.js`.
 
