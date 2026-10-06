@@ -1,9 +1,9 @@
-import * as api from './lib/api.js?v=202610060557';
-import { conditionsAt } from './lib/conditions.js?v=202610060557';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060557';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060557';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060557';
-import { distM, walkMin } from './lib/geo.js?v=202610060557';
+import * as api from './lib/api.js?v=202610060558';
+import { conditionsAt } from './lib/conditions.js?v=202610060558';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060558';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060558';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060558';
+import { distM, walkMin } from './lib/geo.js?v=202610060558';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -356,7 +356,7 @@ function heatMessage(t, uv) {
     return { level: 'bad', title: `Wah, very hot sia: ${reading}`, text: 'Walk 10 min also sure sweat until wet. Short walks and shade win.' };
   }
   if (t >= 33 || uv >= 6) {
-    return { level: 'meh', title: `Quite hot today: ${reading}`, text: 'Can walk, but go under shelter where got.' };
+    return { level: 'meh', title: `Quite hot today: ${reading}`, text: 'Can walk, but go under shelter lah please.' };
   }
   return null;
 }
@@ -728,9 +728,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json?v=202610060557'),
-      loadLocal('data/prices.json?v=202610060557'),
-      loadLocal('data/hawkers.json?v=202610060557'),
+      loadLocal('data/config.json?v=202610060558'),
+      loadLocal('data/prices.json?v=202610060558'),
+      loadLocal('data/hawkers.json?v=202610060558'),
     ]);
     state.cfg = cfg;
     state.prices = prices;
