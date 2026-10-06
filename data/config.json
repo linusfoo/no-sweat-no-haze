@@ -1,6 +1,6 @@
 {
   "office": { "name": "CT Hub", "address": "2 Kallang Ave", "lat": 1.31222, "lng": 103.86282 },
-  "home": { "name": "Sample home", "address": "Blk 201 Tampines St 21", "lat": 1.3529, "lng": 103.95359 },
+  "home": { "name": "Home", "address": "Blk 330 Tampines St 32", "lat": 1.35336, "lng": 103.95953 },
   "mrtHome": [
     {
       "line": "DTL",

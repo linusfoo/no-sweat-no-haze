@@ -1,4 +1,4 @@
-# ☂️ No Sweat, No Haze
+# No Sweat, No Haze
 
 **Stay dry, breathe easy.** Live at **https://linusfoo.github.io/no-sweat-no-haze/**
 
@@ -30,7 +30,7 @@ npm test
 
 ## Changing it
 
-- Office, home and MRT routes: `data/config.json`. Home is a sample (Blk 201 Tampines St 21). MRT ride times are typical values; update `mrtHome` if you change home.
+- Office, home and MRT routes: `data/config.json`. Home is a sample address (Blk 330 Tampines St 32). MRT ride times are typical values; update `mrtHome` if you change home.
 - Price tiers for chains: `data/prices.json`. Unlisted places show as "price unknown".
 - Scoring weights: `lib/score.js`.
 
