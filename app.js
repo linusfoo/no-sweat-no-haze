@@ -1,9 +1,9 @@
-import * as api from './lib/api.js?v=202610060556';
-import { conditionsAt } from './lib/conditions.js?v=202610060556';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060556';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060556';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060556';
-import { distM, walkMin } from './lib/geo.js?v=202610060556';
+import * as api from './lib/api.js?v=202610060557';
+import { conditionsAt } from './lib/conditions.js?v=202610060557';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060557';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060557';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060557';
+import { distM, walkMin } from './lib/geo.js?v=202610060557';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -276,6 +276,9 @@ function homeOptions(pO, pD, cO) {
   return { ranked, notRunning: [...notRunning].filter((s) => !ranked.some((o) => o.key === `bus ${s}`)) };
 }
 
+// "a, b and c"
+const listJoin = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}` : xs[0] || '');
+
 function conditionWords(p) {
   const w = [];
   if (p.rain >= 1.5) w.push('raining');
@@ -306,24 +309,74 @@ function hazeMessage(psi, pm) {
   return null;
 }
 
+// Rain: what's falling now (5-min gauge reading) beats the 2-hour forecast.
+// 2.5 mm in 5 min is about 30 mm/h, a proper downpour.
+function rainMessage(place, c) {
+  const home = place === 'home';
+  const where = home ? `near home (${c.fc?.area || ''})` : `at ${place}`;
+  const mm = c.rain?.mm || 0;
+  const thunder = /thunder/i.test(c.fc?.text || '');
+  const reading = mm > 0 ? `${mm} mm in the last 5 min at ${c.rain.station}.` : '';
+  const walkEnd = home ? ' at the home end' : '';
+  if (mm > 0 && thunder) {
+    return { level: 'bad', title: `Alamak, thunderstorm ${where}!`, text: `${reading} Lightning also got. Don't walk in the open, wait inside or take cab.` };
+  }
+  if (mm >= 2.5) {
+    return { level: 'bad', title: `Wah lau, raining cats and dogs ${where}`, text: `${reading} Umbrella also no use. Pick the option with the least walking${walkEnd}.` };
+  }
+  if (mm >= 1) {
+    return { level: 'bad', title: `Wah, raining ${where} now sia`, text: `${reading} Don't anyhow walk, options with less walking${walkEnd} go up.` };
+  }
+  if (mm > 0) {
+    return { level: 'meh', title: `Drizzling ${where}`, text: `${reading} Bit wet only, umbrella can settle.` };
+  }
+  if (!c.fc || rainFactor(c.fc.text, 0) === 0) return null;
+  const when = c.fc.period;
+  if (thunder || /heavy/i.test(c.fc.text)) {
+    return {
+      level: 'bad',
+      title: `Wah, ${c.fc.text.toLowerCase()} coming ${where}, ${when}`,
+      text: home ? 'Now still dry. Better reach home before it pours.' : 'Now still dry. Want to go, go now before it pours.',
+    };
+  }
+  return {
+    level: 'meh',
+    title: `${c.fc.text} coming ${where}, ${when}`,
+    text: home ? 'Now still dry, but bring umbrella or you reach home drenched.' : 'Now still dry. Want to go, better go now.',
+  };
+}
+
+// Heat: air temperature and UV index, whichever is worse.
+function heatMessage(t, uv) {
+  const reading = `${t}°C, UV ${uv} (${uvBand(uv)})`;
+  if (t >= 35 || uv >= 11) {
+    return { level: 'bad', title: `Alamak, damn hot! ${reading}`, text: 'Walk outside sure melt. Stay in the shade, drink water, take MRT or cab.' };
+  }
+  if (t >= 34 || uv >= 8) {
+    return { level: 'bad', title: `Wah, very hot sia: ${reading}`, text: 'Walk 10 min also sure sweat until wet. Short walks and shade win.' };
+  }
+  if (t >= 33 || uv >= 6) {
+    return { level: 'meh', title: `Quite hot today: ${reading}`, text: 'Can walk, but go under shelter where got.' };
+  }
+  return null;
+}
+
+// One exclamation for the worst thing happening at CT Hub right now, to open the recommendation.
+function moodPrefix(c) {
+  const mm = c.inputs.rainMm;
+  if (mm > 0 && /thunder/i.test(c.inputs.forecastText)) return 'Alamak, thunderstorm.';
+  if (mm >= 1) return 'Wah, raining sia.';
+  if (c.inputs.psi > 100) return 'Wah, the haze jialat.';
+  if (c.inputs.tempC >= 34 || c.inputs.uv >= 8) return 'Wah, damn hot today.';
+  return '';
+}
+
 function buildAlerts(cO, cD) {
   const { office } = state.cfg;
   const alerts = [];
   for (const [place, c] of [[office.name, cO], ['home', cD]]) {
-    const where = place === 'home' ? `near home (${c.fc?.area || ''})` : `at ${place}`;
-    if (c.rain?.mm > 0) {
-      alerts.push({
-        level: c.rain.mm >= 1 ? 'bad' : 'meh',
-        title: `Raining ${where} now sia`,
-        text: `${c.rain.mm} mm in the last 5 min at ${c.rain.station}. Don't anyhow walk, options with less walking ${place === 'home' ? 'at the home end ' : ''}go up.`,
-      });
-    } else if (c.fc && rainFactor(c.fc.text, 0) > 0) {
-      alerts.push({
-        level: 'meh',
-        title: `${c.fc.text} coming ${where}, ${c.fc.period}`,
-        text: place === 'home' ? 'Now still dry, but bring umbrella or you reach home drenched.' : 'Now still dry. Want to go, better go now.',
-      });
-    }
+    const a = rainMessage(place, c);
+    if (a) alerts.push(a);
   }
   const psi = cO.inputs.psi;
   const pm = cO.inputs.pm25;
@@ -333,15 +386,8 @@ function buildAlerts(cO, cD) {
   } else if (psi > 50 && state.sensitive) {
     alerts.push({ level: 'meh', title: `Air so-so: PSI ${psi}`, text: 'Most people ok. Counted for you because your sensitive switch is on.' });
   }
-  const t = cO.inputs.tempC;
-  const uv = cO.inputs.uv;
-  if (t >= 33 || uv >= 8) {
-    alerts.push({
-      level: t >= 34 || uv >= 11 ? 'bad' : 'meh',
-      title: `Very hot sia: ${t}°C, UV ${uv} (${uvBand(uv)})`,
-      text: 'Walk 10 min also sure sweat. Short walks and shade win.',
-    });
-  }
+  const heat = heatMessage(cO.inputs.tempC, cO.inputs.uv);
+  if (heat) alerts.push(heat);
   return alerts;
 }
 
@@ -363,7 +409,7 @@ const penaltyMin = (o) => o.feelsLike - o.totalMin;
 function explain(o, ctx) {
   const { best, fastest, leastOut, words } = ctx;
   const out = o.outOrigin + o.outDest;
-  const weather = words.length ? `the ${words.map((w) => ({ raining: 'rain', drizzly: 'drizzle', hazy: 'haze', hot: 'heat' })[w]).join(' and ')}` : 'the weather';
+  const weather = words.length ? `the ${listJoin(words.map((w) => ({ raining: 'rain', drizzly: 'drizzle', hazy: 'haze', hot: 'heat' })[w]))}` : 'the weather';
   const tags = [];
   if (o === fastest) tags.push('Fastest');
   if (o === leastOut) tags.push('Least time outside');
@@ -444,11 +490,12 @@ function renderHome(pO, pD, cO) {
   let why;
   if (!words.length) why = 'Weather ok today, so just take the fastest.';
   else {
-    why = `It's ${words.join(' and ')} today. This one keeps you outside only ${mins(best.outOrigin + best.outDest)}`;
+    why = `It's ${listJoin(words)} today. This one keeps you outside only ${mins(best.outOrigin + best.outDest)}`;
     if (fastest !== best) why += `, vs ${mins(fastest.outOrigin + fastest.outDest)} for the faster ${fastest.label}`;
     why += '.';
   }
-  if (cO.inputs.psi > 100) why = `Wah, the haze jialat. ${why}`;
+  const mood = moodPrefix(cO);
+  if (mood) why = `${mood} ${why}`;
   if (state.sensitive && pO.haze + pO.heat + pD.haze + pD.heat > 0) why += ' Ranked with sensitive mode on.';
   const leave = best.mode === 'wait' ? 'wait 30 min first' : best.leaveIn < 0.5 ? 'go now' : `leave in ${mins(best.leaveIn)}`;
   $('#home-verdict').innerHTML = `<div class="big">${esc(best.label)}: ${leave}, reach home by ${clock(inMin(best.totalMin))}</div><div class="why">${esc(why)}</div><div class="how">${esc(howLine(pO, pD))}</div>`;
@@ -529,9 +576,10 @@ function renderLunch(pO) {
     const top = rows[0];
     const words = conditionWords(pO);
     let why = words.length
-      ? `It's ${words.join(' and ')} today. Only ${mins(top.best.outOrigin + top.best.outDest)} outside to reach.`
+      ? `It's ${listJoin(words)} today. Only ${mins(top.best.outOrigin + top.best.outDest)} outside to reach.`
       : `Weather ok, only ${mins(top.best.totalMin)} away.`;
-    if (state.raw.psi && conditionsAt(state.raw, office.lat, office.lng).inputs.psi > 100) why = `Wah, the haze jialat. ${why}`;
+    const mood = moodPrefix(conditionsAt(state.raw, office.lat, office.lng));
+    if (mood) why = `${mood} ${why}`;
     if (state.sensitive && pO.haze + pO.heat > 0) why += ' Ranked with sensitive mode on.';
     $('#lunch-verdict').innerHTML = `<div class="big">${esc(top.place.name)}: ${esc(top.best.label.toLowerCase())}</div><div class="why">${esc(why)} Showing places ${esc(budgetText)} per pax.</div><div class="how">${esc(howLine(pO, pO))}</div>`;
     const shown = rows.slice(0, 15);
@@ -680,9 +728,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json?v=202610060556'),
-      loadLocal('data/prices.json?v=202610060556'),
-      loadLocal('data/hawkers.json?v=202610060556'),
+      loadLocal('data/config.json?v=202610060557'),
+      loadLocal('data/prices.json?v=202610060557'),
+      loadLocal('data/hawkers.json?v=202610060557'),
     ]);
     state.cfg = cfg;
     state.prices = prices;
