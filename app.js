@@ -1,9 +1,9 @@
-import * as api from './lib/api.js?v=202610060547';
-import { conditionsAt } from './lib/conditions.js?v=202610060547';
-import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060547';
-import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060547';
-import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060547';
-import { distM, walkMin } from './lib/geo.js?v=202610060547';
+import * as api from './lib/api.js?v=202610060551';
+import { conditionsAt } from './lib/conditions.js?v=202610060551';
+import { penalty, rankOptions, feelsLikeMin, EXTRA_COST_PER_OUTDOOR_MIN, rainFactor, hazeFactor, heatFactor, taxiWaitMin, taxiFare, waitingHelps } from './lib/score.js?v=202610060551';
+import { directTrips, reachableStops, catchableBus } from './lib/bus.js?v=202610060551';
+import { hawkerPlaces, mergePlaces, priceTier, lunchOptions, kindLabel } from './lib/places.js?v=202610060551';
+import { distM, walkMin } from './lib/geo.js?v=202610060551';
 
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) =>
@@ -32,6 +32,7 @@ const pref = {
 
 const KINDS = ['hawker', 'food_court', 'restaurant', 'fast_food', 'cafe'];
 const TIER_SIGNS = { 1: '$', 2: '$$', 3: '$$$' };
+const BUDGET_LABEL = { 1: 'Below $8', 2: 'Below $15', 3: 'Below $30' };
 
 const state = {
   tab: pref.get('tab', 'home'),
@@ -109,7 +110,7 @@ async function loadOsm() {
 async function refresh() {
   if (state.refreshing) return;
   state.refreshing = true;
-  $('#status').textContent = 'Updating…';
+  $('#status').textContent = 'Pai seh, updating…';
   const live = {
     forecast: api.getForecast,
     rainfall: api.getRainfall,
@@ -239,7 +240,7 @@ function homeOptions(pO, pD, cO) {
     opts.push({
       mode: 'taxi',
       key: 'taxi',
-      label: 'Taxi / ride-hail',
+      label: 'Grab / taxi',
       detail: `${nearby} free taxis within 500 m · ~$${Math.round(taxiFare(roadKm))} metered${scarce}`,
       leaveIn: 0,
       totalMin: wait + (roadKm * 1000) / 550,
@@ -294,14 +295,14 @@ function buildAlerts(cO, cD) {
     if (c.rain?.mm > 0) {
       alerts.push({
         level: c.rain.mm >= 1 ? 'bad' : 'meh',
-        title: `Raining ${where} now`,
-        text: `${c.rain.mm} mm in the last 5 min at ${c.rain.station}. Options with less walking ${place === 'home' ? 'at the home end ' : ''}move up.`,
+        title: `Raining ${where} now sia`,
+        text: `${c.rain.mm} mm in the last 5 min at ${c.rain.station}. Don't anyhow walk, options with less walking ${place === 'home' ? 'at the home end ' : ''}go up.`,
       });
     } else if (c.fc && rainFactor(c.fc.text, 0) > 0) {
       alerts.push({
         level: 'meh',
-        title: `${c.fc.text} expected ${where}, ${c.fc.period}`,
-        text: place === 'home' ? 'Dry for now. Bring an umbrella for the walk home.' : "Dry for now. If you're going, going soon beats waiting.",
+        title: `${c.fc.text} coming ${where}, ${c.fc.period}`,
+        text: place === 'home' ? 'Now still dry, but bring umbrella or you reach home drenched.' : 'Now still dry. Want to go, better go now.',
       });
     }
   }
@@ -310,19 +311,19 @@ function buildAlerts(cO, cD) {
   if (psi > 100 || pm > 55) {
     alerts.push({
       level: psi > 200 || pm > 150 ? 'bad' : psi > 100 ? 'bad' : 'meh',
-      title: `Haze: PSI ${psi} (${psiBand(psi)})`,
-      text: `PM2.5 is ${pm} µg/m³. Keep time outdoors short${state.sensitive ? '' : ', especially if you have asthma or allergies (turn on sensitive mode below)'}.`,
+      title: `Haze again: PSI ${psi} (${psiBand(psi)})`,
+      text: `PM2.5 is ${pm} µg/m³. Walk less today${state.sensitive ? '' : '. Got asthma? On the switch below'}.`,
     });
   } else if (psi > 50 && state.sensitive) {
-    alerts.push({ level: 'meh', title: `Air is moderate: PSI ${psi}`, text: 'Fine for most people. Counted for you because sensitive mode is on.' });
+    alerts.push({ level: 'meh', title: `Air so-so: PSI ${psi}`, text: 'Most people ok. Counted for you because your sensitive switch is on.' });
   }
   const t = cO.inputs.tempC;
   const uv = cO.inputs.uv;
   if (t >= 33 || uv >= 8) {
     alerts.push({
       level: t >= 34 || uv >= 11 ? 'bad' : 'meh',
-      title: `Hot out: ${t}°C, UV ${uv} (${uvBand(uv)})`,
-      text: 'Long walks will leave you sweaty. Shade and short walks win.',
+      title: `Very hot sia: ${t}°C, UV ${uv} (${uvBand(uv)})`,
+      text: 'Walk 10 min also sure sweat. Short walks and shade win.',
     });
   }
   return alerts;
@@ -337,7 +338,7 @@ function renderAlerts(cO, cD) {
   const alerts = buildAlerts(cO, cD).sort((a, b) => (a.level === b.level ? 0 : a.level === 'bad' ? -1 : 1));
   $('#alerts').innerHTML = alerts.length
     ? alerts.map((a) => `<div class="alert ${a.level}" role="status"><span class="alert-title">${esc(a.title)}</span> <span class="alert-text">${esc(a.text)}</span></div>`).join('')
-    : '<div class="alert good" role="status"><span class="alert-title">No weather alerts</span> <span class="alert-text">Dry, clear air and not too hot. The fastest option wins.</span></div>';
+    : '<div class="alert good" role="status"><span class="alert-title">Weather steady today</span> <span class="alert-text">No rain, no haze, not too hot. Just take the fastest way.</span></div>';
 }
 
 const penaltyMin = (o) => o.feelsLike - o.totalMin;
@@ -350,16 +351,16 @@ function explain(o, ctx) {
   const tags = [];
   if (o === fastest) tags.push('Fastest');
   if (o === leastOut) tags.push('Least time outside');
-  if (o.mode === 'bus' && o.leaveIn >= 1) tags.push(`Wait indoors ${mins(o.leaveIn)}`);
+  if (o.mode === 'bus' && o.leaveIn >= 1) tags.push(`Lepak indoors ${mins(o.leaveIn)}`);
 
-  if (o.mode === 'wait') return { tags, reason: 'Sits out the shower indoors, then goes.', good: o === best };
+  if (o.mode === 'wait') return { tags, reason: 'Rain come and go only. Wait it out, then go.', good: o === best };
   if (o === best) {
     let reason;
-    if (penaltyMin(best) < 0.5 && !words.length) reason = 'Quickest door to door, and the weather is fine.';
-    else if (best === fastest && best === leastOut) reason = 'Quickest and the least time outside.';
-    else if (best === leastOut) reason = `Only ${mins(out)} outside. Worth ${mins(best.totalMin - fastest.totalMin)} more on the road than ${fastest.label} in ${weather}.`;
-    else if (best === fastest) reason = `Quickest, with just ${mins(out)} outside.`;
-    else reason = `Best balance: ${mins(out)} outside and ${mins(best.totalMin)} door to door.`;
+    if (penaltyMin(best) < 0.5 && !words.length) reason = 'Fastest door to door. Weather ok, no stress.';
+    else if (best === fastest && best === leastOut) reason = 'Fastest and hardly outside. Confirm plus chop.';
+    else if (best === leastOut) reason = `Only ${mins(out)} outside. ${mins(best.totalMin - fastest.totalMin)} slower than ${fastest.label}, but in ${weather} worth it.`;
+    else if (best === fastest) reason = `Fastest, and only ${mins(out)} outside. Shiok.`;
+    else reason = `Best of both: ${mins(out)} outside, ${mins(best.totalMin)} door to door.`;
     return { tags, reason, good: true };
   }
   const tripDiff = o.totalMin - best.totalMin;
@@ -370,11 +371,11 @@ function explain(o, ctx) {
       o.outDest >= o.outOrigin
         ? `a ${mins(o.outDest)} walk at the far end`
         : `${mins(o.outOrigin)} walking${o.mode === 'bus' ? ' and waiting' : ''} at the start`;
-    reason = `Lower because of ${cause} in ${weather}.`;
+    reason = `Kena ${cause} in ${weather}. Not worth it lah.`;
   } else if (tripDiff >= 1) {
-    reason = `Lower because it takes ${mins(tripDiff)} longer door to door.`;
+    reason = `Takes ${mins(tripDiff)} longer door to door. Too slow lah.`;
   } else {
-    reason = 'Close to the top option.';
+    reason = 'Also can, almost as good.';
   }
   return { tags, reason, good: false };
 }
@@ -417,7 +418,7 @@ function renderHome(pO, pD, cO) {
   const { home } = state.cfg;
   const { ranked, notRunning } = homeOptions(pO, pD, cO);
   if (!ranked.length) {
-    $('#home-verdict').innerHTML = `<div class="big">Loading options…</div>`;
+    $('#home-verdict').innerHTML = `<div class="big">Pai seh, please wait ah…</div>`;
     $('#home-rows').innerHTML = '';
     return;
   }
@@ -425,15 +426,15 @@ function renderHome(pO, pD, cO) {
   const words = [...new Set([...conditionWords(pO), ...conditionWords(pD)])];
   const fastest = [...ranked].sort((a, b) => a.totalMin - b.totalMin)[0];
   let why;
-  if (!words.length) why = "Weather's fine, so the quickest door-to-door option wins.";
+  if (!words.length) why = 'Weather ok today, so just take the fastest.';
   else {
-    why = `It's ${words.join(' and ')}. This option keeps you outside for ${mins(best.outOrigin + best.outDest)}`;
-    if (fastest !== best) why += `, vs ${mins(fastest.outOrigin + fastest.outDest)} for the quicker ${fastest.label}`;
+    why = `It's ${words.join(' and ')} today. This one keeps you outside only ${mins(best.outOrigin + best.outDest)}`;
+    if (fastest !== best) why += `, vs ${mins(fastest.outOrigin + fastest.outDest)} for the faster ${fastest.label}`;
     why += '.';
   }
   if (state.sensitive && pO.haze + pO.heat + pD.haze + pD.heat > 0) why += ' Ranked with sensitive mode on.';
-  const leave = best.mode === 'wait' ? 'wait 30 min first' : best.leaveIn < 0.5 ? 'leave now' : `leave in ${mins(best.leaveIn)}`;
-  $('#home-verdict').innerHTML = `<div class="big">${esc(best.label)}: ${leave}, home by ${clock(inMin(best.totalMin))}</div><div class="why">${esc(why)}</div><div class="how">${esc(howLine(pO, pD))}</div>`;
+  const leave = best.mode === 'wait' ? 'wait 30 min first' : best.leaveIn < 0.5 ? 'go now' : `leave in ${mins(best.leaveIn)}`;
+  $('#home-verdict').innerHTML = `<div class="big">${esc(best.label)}: ${leave}, reach home by ${clock(inMin(best.totalMin))}</div><div class="why">${esc(why)}</div><div class="how">${esc(howLine(pO, pD))}</div>`;
 
   const shown = ranked.slice(0, 8);
   const ctx = {
@@ -459,7 +460,7 @@ function renderHome(pO, pD, cO) {
     .join('');
 
   const notes = [`To ${home.name.toLowerCase()} (${home.address}). Bus times are live from arrivelah; MRT ride times are typical, not live.`];
-  if (notRunning.length) notes.push(`No catchable arrival right now for bus ${notRunning.join(', ')}.`);
+  if (notRunning.length) notes.push(`Bus ${notRunning.join(', ')}: none coming that you can catch now.`);
   if (ranked.length > 8) notes.push(`${ranked.length - 8} slower options hidden.`);
   $('#home-note').textContent = notes.join(' ');
 }
@@ -469,7 +470,7 @@ function renderHome(pO, pD, cO) {
 function renderLunchControls() {
   const tiers = state.prices.tiers;
   $('#budget').innerHTML = Object.keys(tiers)
-    .map((t) => `<button class="chip" type="button" data-tier="${t}" aria-pressed="${+t === state.budget}">Up to ${TIER_SIGNS[t]} <span class="sub">(${esc(tiers[t])})</span></button>`)
+    .map((t) => `<button class="chip" type="button" data-tier="${t}" aria-pressed="${+t === state.budget}">${BUDGET_LABEL[t]}</button>`)
     .join('');
   $('#kinds').innerHTML = KINDS.map((k) => `<button class="chip" type="button" data-kind="${k}" aria-pressed="${state.kinds.has(k)}">${esc(kindLabel(k))}</button>`).join('');
   $('#unknown').checked = state.includeUnknown;
@@ -479,16 +480,16 @@ function renderLunchControls() {
 function lunchReason(best) {
   if (best.mode === 'bus') {
     const saved = walkMin(best.distM) - (best.outOrigin + best.outDest);
-    return `<div class="reason up">Bus cuts ${mins(saved)} of walking outside.</div>`;
+    return `<div class="reason up">Take bus ${esc(best.trip.service)}, save ${mins(saved)} of walking under the sun.</div>`;
   }
   const pen = penaltyMin(best);
-  return pen >= 2 ? `<div class="reason down">${mins(best.outOrigin)} walk adds ${mins(pen)} in this weather.</div>` : '';
+  return pen >= 2 ? `<div class="reason down">${mins(best.outOrigin)} walk. In this weather, feels like ${mins(pen)} more.</div>` : '';
 }
 
 function renderLunch(pO) {
   const { office, lunchRadiusM } = state.cfg;
   if (!state.bus) {
-    $('#lunch-verdict').innerHTML = '<div class="big">Loading bus data…</div>';
+    $('#lunch-verdict').innerHTML = '<div class="big">Pai seh, still loading the buses…</div>';
     return;
   }
   const hawkers = hawkerPlaces(state.hawkers).filter((h) => distM(office.lat, office.lng, h.lat, h.lng) <= lunchRadiusM);
@@ -503,18 +504,18 @@ function renderLunch(pO) {
   }
   rows.sort((a, b) => a.best.feelsLike - b.best.feelsLike);
 
-  const budgetText = `${TIER_SIGNS[state.budget]} (${state.prices.tiers[state.budget]})`;
+  const budgetText = BUDGET_LABEL[state.budget].toLowerCase();
   if (!rows.length) {
-    $('#lunch-verdict').innerHTML = `<div class="big">Nothing matches up to ${esc(budgetText)}</div><div class="why">Try a higher budget, more place types, or include unknown prices.</div>`;
+    $('#lunch-verdict').innerHTML = `<div class="big">Alamak, nothing ${esc(budgetText)}</div><div class="why">Try a bigger budget, more place types, or include places with unknown prices.</div>`;
     $('#lunch-rows').innerHTML = '';
   } else {
     const top = rows[0];
     const words = conditionWords(pO);
     let why = words.length
-      ? `It's ${words.join(' and ')}: only ${mins(top.best.outOrigin + top.best.outDest)} outside to get there.`
-      : `Weather's fine: ${mins(top.best.totalMin)} away.`;
+      ? `It's ${words.join(' and ')} today. Only ${mins(top.best.outOrigin + top.best.outDest)} outside to reach.`
+      : `Weather ok, only ${mins(top.best.totalMin)} away.`;
     if (state.sensitive && pO.haze + pO.heat > 0) why += ' Ranked with sensitive mode on.';
-    $('#lunch-verdict').innerHTML = `<div class="big">${esc(top.place.name)}: ${esc(top.best.label.toLowerCase())}</div><div class="why">${esc(why)} Showing places up to ${esc(budgetText)} per person.</div><div class="how">${esc(howLine(pO, pO))}</div>`;
+    $('#lunch-verdict').innerHTML = `<div class="big">${esc(top.place.name)}: ${esc(top.best.label.toLowerCase())}</div><div class="why">${esc(why)} Showing places ${esc(budgetText)} per pax.</div><div class="how">${esc(howLine(pO, pO))}</div>`;
     const shown = rows.slice(0, 15);
     const maxFeels = Math.max(...shown.map((r) => r.best.feelsLike));
     $('#lunch-rows').innerHTML = shown
@@ -542,8 +543,8 @@ function renderLunch(pO) {
   }
 
   const notes = [`${rows.length} places match within ${lunchRadiusM / 1000} km. One-way trip from ${office.name}.`];
-  if (state.osmError) notes.push(`Restaurants unavailable (OpenStreetMap: ${state.osmError}); showing hawker centres only.`);
-  else if (!state.osm) notes.push('Loading restaurants from OpenStreetMap…');
+  if (state.osmError) notes.push(`Pai seh, restaurants cannot load (OpenStreetMap: ${state.osmError}). Showing hawker centres only.`);
+  else if (!state.osm) notes.push('Still loading the restaurants, wait ah…');
   notes.push('$ tiers are curated estimates for chains; hawker centres are $.');
   $('#lunch-note').textContent = notes.join(' ');
 }
@@ -589,13 +590,13 @@ function renderSensitive(cO) {
   const sens = extra(true);
   let desc;
   if (!state.raw.psi && !state.raw.temp) {
-    desc = 'Turn this on if you have asthma or allergies, or struggle in the heat. Haze, heat and UV will count double.';
+    desc = 'On this and haze, heat and UV count double, so options with less walking go up.';
   } else if (sens === 0) {
-    desc = `Haze and heat are low right now, so this makes no difference yet. When they rise, ${on ? 'they count' : 'turning it on makes them count'} double.`;
+    desc = `Haze and heat ok now, so no difference yet. When they go up, ${on ? 'they count' : 'on this and they count'} double.`;
   } else if (on) {
-    desc = `Haze, heat and UV count double. Right now each minute outside adds ${sens.toFixed(1)} min to "feels like" (${normal.toFixed(1)} min normally), so short-walk options rank higher.`;
+    desc = `On liao. Haze, heat and UV count double. Now each minute outside adds ${sens.toFixed(1)} min to "feels like" instead of ${normal.toFixed(1)} min, so short-walk options go up.`;
   } else {
-    desc = `For asthma, allergies or heat sensitivity. Right now it would make each minute outside add ${sens.toFixed(1)} min to "feels like" instead of ${normal.toFixed(1)} min.`;
+    desc = `For asthma, allergies or cannot tahan heat. On this and each minute outside adds ${sens.toFixed(1)} min to "feels like" instead of ${normal.toFixed(1)} min.`;
   }
   $('#sensitive-desc').textContent = desc;
 }
@@ -661,9 +662,9 @@ function bind() {
 async function init() {
   try {
     const [cfg, prices, hawkers] = await Promise.all([
-      loadLocal('data/config.json?v=202610060547'),
-      loadLocal('data/prices.json?v=202610060547'),
-      loadLocal('data/hawkers.json?v=202610060547'),
+      loadLocal('data/config.json?v=202610060551'),
+      loadLocal('data/prices.json?v=202610060551'),
+      loadLocal('data/hawkers.json?v=202610060551'),
     ]);
     state.cfg = cfg;
     state.prices = prices;
