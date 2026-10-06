@@ -1,0 +1,20 @@
+{
+  "office": { "name": "CT Hub", "address": "2 Kallang Ave", "lat": 1.31222, "lng": 103.86282 },
+  "home": { "name": "Sample home", "address": "Blk 201 Tampines St 21", "lat": 1.3529, "lng": 103.95359 },
+  "mrtHome": [
+    {
+      "line": "DTL",
+      "from": { "name": "Bendemeer (DT23)", "lat": 1.31367, "lng": 103.86298 },
+      "to": { "name": "Tampines East (DT33)", "lat": 1.35619, "lng": 103.95463 },
+      "rideMin": 22
+    },
+    {
+      "line": "EWL",
+      "from": { "name": "Lavender (EW11)", "lat": 1.30738, "lng": 103.86277 },
+      "to": { "name": "Tampines (EW2)", "lat": 1.35359, "lng": 103.94522 },
+      "rideMin": 20
+    }
+  ],
+  "lunchRadiusM": 2000,
+  "defaultBudgetTier": 2
+}
